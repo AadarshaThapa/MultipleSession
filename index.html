@@ -5,24 +5,30 @@
     <title>AngularJS</title>
     <link href="style.css" rel="stylesheet" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+    <script src="https://rawgithub.com/hackedbychinese/ng-idle/master/angular-idle.js"></script>
     <script src="app.js"></script>
 </head>
 
 <body>
 
     <div ng-controller="SessionController">
-        <div ng-repeat="account in accounts">
+
+        <div ng-repeat=" account in accounts">
             <button ng-click="startSession(account.id, account.sessionData)">Login as {{account.name}}</button>
         </div>
 
-        <div ng-if="currentAccountId">
+        <div ng-if=" currentAccountId">
             <button ng-click="endSession()">Logout</button>
+            <button ng-click="logoutButton()">Logout 1</button>
+
+
         </div>
 
-        <div ng-show="currentAccountId">
+        <div ng-show=" currentAccountId">
             {{activeSession.id}}
         </div>
-    </div>
+
 
 </body>
 

@@ -1,0 +1,34 @@
+<html>
+
+<head>
+    <title>Login Page</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+    <script src="https://rawgithub.com/hackedbychinese/ng-idle/master/angular-idle.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+
+    <div class="LoginPage" ng-app="myApp" ng-controller="SessionController">
+        <h2>Welcome to Login Page</h2>
+        <form name="loginForm">
+            <div class="form-group">
+                Username:
+                <input ng-model="loginData.username" type="text" placeholder="Enter your username" required autofocus />
+            </div><br>
+
+            <div class="form-group">
+                Password:
+                <input ng-model="loginData.password" type="password" required />
+            </div>
+            <p class="forgot-pwd">
+                <a href="#">Forgot your password? </a>
+            </p>
+
+            <button type="submit" class="Login-button" ng-click="loginButton()">Login</button>
+        </form>
+    </div>
+
+</body>

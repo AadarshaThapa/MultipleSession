@@ -1,0 +1,12 @@
+
+// $scope.loginButton = function () {
+//     $scope.startSession($scope.currentAccountId, {});
+//     $location.path('/index');
+
+// };
+
+
+// console.log("Login button clicked")
+// $location.path('/index');
+// $scope.startSession($scope.currentAccountId, $scope.loginData);
+// sessionStorage.setItem(loginData, JSON.stringify($scope.loginData));

@@ -1,4 +1,4 @@
-var app = angular.module('myApp', ['ngRoute']);
+var app = angular.module('myApp', ['ngRoute', 'ngIdle']);
 
 app.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
@@ -16,7 +16,7 @@ app.config(['$routeProvider', function ($routeProvider) {
 
 }]);
 
-app.controller('SessionController', ['$location', '$scope', 'SessionService', function ($location, $scope, SessionService) {
+app.controller('SessionController', ['$location', '$scope', 'Idle', 'Keepalive', 'SessionService', function ($location, $scope, SessionService, Idle, Keepalive,) {
 
     var request = indexedDB.open("LoginCredentialsDB", 1);
 
@@ -72,14 +72,21 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
         var username = $scope.loginData.username;
         var password = $scope.loginData.password;
 
+
+        var sessionID = generateSessionID();
+        $scope.loginData.sessionId = sessionID;
+
+
         var sessionData = {
             username: $scope.loginData.username,
             password: $scope.loginData.password,
             isLoggedin: "true",
+            sessionID: sessionID
         };
-        // console.log(sessionData)
+
         sessionStorage.setItem('LoginCred', JSON.stringify(sessionData));
-        // SessionService.startSession(accountId, sessionData)
+        sessionStorage.setItem('loginData', JSON.stringify($scope.loginData));
+
 
 
         var request = indexedDB.open("LoginCredentialsDB", 1);
@@ -116,12 +123,10 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
     $scope.accounts = JSON.parse(sessionStorage.getItem('Accounts')) || [];
 
     $scope.startSession = function (accountId, sessionData) {
-        // sessionStorage.setItem('Accounts', JSON.stringify(initialAccounts));
-
         sessionStorage.setItem('loginData', JSON.stringify($scope.loginData));
         $scope.currentAccountId = accountId;
         $scope.activeSession = { id: accountId, sessionData: sessionData.data };
-        // $location.path('/session');
+
 
     };
 
@@ -133,6 +138,21 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
         $scope.activeSession = {};
 
     };
+
+
+    function generateSessionID() {
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var sessionID = '';
+
+        var characterslength = characters.length;
+
+        for (i = 0; i <= 6; i++) {
+            sessionID += characters.charAt(Math.floor(Math.random() * characterslength));
+
+        }
+        return sessionID;
+    }
+
 
 }]);
 
@@ -154,8 +174,6 @@ app.factory('SessionService', [function () {
 
     };
 }]);
-
-
 
 
 

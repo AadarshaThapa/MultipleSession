@@ -66,26 +66,49 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
         }
     ];
 
-    $scope.loginButton = function () {
 
-        $location.path('/session');
+
+    $scope.loginButton = function () {
+        var username = $scope.loginData.username;
+        var password = $scope.loginData.password;
 
         var sessionData = {
             username: $scope.loginData.username,
             password: $scope.loginData.password,
             isLoggedin: "true",
         };
-        SessionService.startSession(accountId, sessionData)
+        // console.log(sessionData)
+        sessionStorage.setItem('LoginCred', JSON.stringify(sessionData));
+        // SessionService.startSession(accountId, sessionData)
 
-        SessionService.checkCredentials(sessionData).then(function (accountId) {
-            if (accountId) {
-                $scope.startSession(accountId, sessionData);
-            } else {
-                console.error("Invalid username or password!");
-                alert("Invalid username or password!");
-            }
-        });
+
+        var request = indexedDB.open("LoginCredentialsDB", 1);
+
+        request.onsuccess = function (event) {
+            var db = event.target.result;
+            var transaction = db.transaction(["loginCredentials"], "readonly");
+            var objectStore = transaction.objectStore("loginCredentials");
+            var request = objectStore.openCursor();
+
+            request.onsuccess = function (event) {
+                var cursor = event.target.result;
+                if (cursor) {
+
+                    if (cursor.value.username === username && cursor.value.password === password) {
+
+                        $location.path('/session');
+                        $scope.$apply();
+                        return;
+                    }
+                    cursor.continue();
+                } else {
+
+                    alert("Invalid username or password");
+                }
+            };
+        };
     };
+
 
 
     sessionStorage.setItem('Accounts', JSON.stringify(initialAccounts));
@@ -93,6 +116,7 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
     $scope.accounts = JSON.parse(sessionStorage.getItem('Accounts')) || [];
 
     $scope.startSession = function (accountId, sessionData) {
+        // sessionStorage.setItem('Accounts', JSON.stringify(initialAccounts));
 
         sessionStorage.setItem('loginData', JSON.stringify($scope.loginData));
         $scope.currentAccountId = accountId;
@@ -104,6 +128,7 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
     $scope.endSession = function () {
         $location.path('/login');
         sessionStorage.removeItem('loginData');
+        sessionStorage.removeItem('LoginCred');
         $scope.currentAccountId = null;
         $scope.activeSession = {};
 
@@ -112,7 +137,7 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
 }]);
 
 
-app.factory('SessionService', ['$q', '$location', function ($q, $location) {
+app.factory('SessionService', [function () {
     return {
         startSession: function (accountId, sessionData) {
             sessionStorage.setItem(accountId, JSON.stringify(sessionData));
@@ -126,43 +151,7 @@ app.factory('SessionService', ['$q', '$location', function ($q, $location) {
         },
 
 
-        checkCredentials: function (loginData) {
-            var deferred = $q.defer();
-            var request = indexedDB.open("LoginCredentialsDB");
 
-            request.onsuccess = function (event) {
-                var db = event.target.result;
-                var transaction = db.transaction(["loginCredentials"], "readonly");
-                var objectStore = transaction.objectStore("loginCredentials");
-                var index = objectStore.index("username");
-
-                var getRequest = index.get(loginData.username);
-                getRequest.onsuccess = function (event) {
-                    var credential = event.target.result;
-                    if (credential && credential.password === loginData.password) {
-                        deferred.resolve(credential.id);
-                    } else {
-                        deferred.resolve(null);
-                    }
-                };
-
-                getRequest.onerror = function (event) {
-                    console.error("Error retrieving data from indexedDB:", event.target.error);
-                    deferred.resolve(null);
-                };
-
-                transaction.oncomplete = function (event) {
-                    db.close();
-                };
-            };
-
-            request.onerror = function (event) {
-                console.error("Error", event.target.error);
-                deferred.resolve(null);
-            };
-
-            return deferred.promise;
-        }
     };
 }]);
 

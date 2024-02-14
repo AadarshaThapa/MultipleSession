@@ -1,12 +1,12 @@
 var app = angular.module('myApp', ['ngRoute']);
 
-app.config(['$routeProvider', function ($routeProvider, $route) {
+app.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/login', {
             templateUrl: 'login.html'
         })
-        .when('/index', {
-            templateUrl: 'index.html'
+        .when('/session', {
+            templateUrl: 'session.html'
         })
         .otherwise({
             redirectTo: '/login'
@@ -14,7 +14,7 @@ app.config(['$routeProvider', function ($routeProvider, $route) {
 
 }]);
 
-app.controller('SessionController', ['$scope', '$location', '$route', 'SessionService', function ($scope, $route, $location, SessionService) {
+app.controller('SessionController', ['$location', '$scope', 'SessionService', function ($location, $scope, SessionService) {
 
     var request = indexedDB.open("LoginCredentialsDB", 1);
 
@@ -65,7 +65,8 @@ app.controller('SessionController', ['$scope', '$location', '$route', 'SessionSe
     ];
 
     $scope.loginButton = function () {
-        $location.path('/index');
+
+        $location.path('/session');
 
         var sessionData = {
             username: $scope.loginData.username,
@@ -90,7 +91,7 @@ app.controller('SessionController', ['$scope', '$location', '$route', 'SessionSe
     $scope.accounts = JSON.parse(sessionStorage.getItem('Accounts')) || [];
 
     $scope.startSession = function (accountId, sessionData) {
-        $location.path('/index');
+        // $location.path('/session');
         sessionStorage.setItem('loginData', JSON.stringify($scope.loginData));
         $scope.currentAccountId = accountId;
         $scope.activeSession = { id: accountId, sessionData: sessionData.data };
@@ -108,7 +109,7 @@ app.controller('SessionController', ['$scope', '$location', '$route', 'SessionSe
 }]);
 
 
-app.factory('SessionService', ['$q', function ($q) {
+app.factory('SessionService', ['$q', '$location', function ($q, $location) {
     return {
         startSession: function (accountId, sessionData) {
             sessionStorage.setItem(accountId, JSON.stringify(sessionData));

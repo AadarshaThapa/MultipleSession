@@ -3,10 +3,12 @@ var app = angular.module('myApp', ['ngRoute']);
 app.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/login', {
-            templateUrl: 'login.html'
+            templateUrl: 'login.html',
+            controller: 'SessionController'
         })
         .when('/session', {
-            templateUrl: 'session.html'
+            templateUrl: 'session.html',
+            controller: 'SessionController'
         })
         .otherwise({
             redirectTo: '/login'
@@ -75,14 +77,14 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
         };
         SessionService.startSession(accountId, sessionData)
 
-        // SessionService.checkCredentials(sessionData).then(function (accountId) {
-        //     if (accountId) {
-        //         $scope.startSession(accountId, sessionData);
-        //     } else {
-        //         console.error("Invalid username or password!");
-        //         alert("Invalid username or password!");
-        //     }
-        // });
+        SessionService.checkCredentials(sessionData).then(function (accountId) {
+            if (accountId) {
+                $scope.startSession(accountId, sessionData);
+            } else {
+                console.error("Invalid username or password!");
+                alert("Invalid username or password!");
+            }
+        });
     };
 
 
@@ -91,10 +93,11 @@ app.controller('SessionController', ['$location', '$scope', 'SessionService', fu
     $scope.accounts = JSON.parse(sessionStorage.getItem('Accounts')) || [];
 
     $scope.startSession = function (accountId, sessionData) {
-        // $location.path('/session');
+
         sessionStorage.setItem('loginData', JSON.stringify($scope.loginData));
         $scope.currentAccountId = accountId;
         $scope.activeSession = { id: accountId, sessionData: sessionData.data };
+        // $location.path('/session');
 
     };
 
@@ -123,43 +126,43 @@ app.factory('SessionService', ['$q', '$location', function ($q, $location) {
         },
 
 
-        // checkCredentials: function (loginData) {
-        //     var deferred = $q.defer();
-        //     var request = indexedDB.open("LoginCredentialsDB");
+        checkCredentials: function (loginData) {
+            var deferred = $q.defer();
+            var request = indexedDB.open("LoginCredentialsDB");
 
-        //     request.onsuccess = function (event) {
-        //         var db = event.target.result;
-        //         var transaction = db.transaction(["loginCredentials"], "readonly");
-        //         var objectStore = transaction.objectStore("loginCredentials");
-        //         var index = objectStore.index("username");
+            request.onsuccess = function (event) {
+                var db = event.target.result;
+                var transaction = db.transaction(["loginCredentials"], "readonly");
+                var objectStore = transaction.objectStore("loginCredentials");
+                var index = objectStore.index("username");
 
-        //         var getRequest = index.get(loginData.username);
-        //         getRequest.onsuccess = function (event) {
-        //             var credential = event.target.result;
-        //             if (credential && credential.password === loginData.password) {
-        //                 deferred.resolve(credential.id);
-        //             } else {
-        //                 deferred.resolve(null);
-        //             }
-        //         };
+                var getRequest = index.get(loginData.username);
+                getRequest.onsuccess = function (event) {
+                    var credential = event.target.result;
+                    if (credential && credential.password === loginData.password) {
+                        deferred.resolve(credential.id);
+                    } else {
+                        deferred.resolve(null);
+                    }
+                };
 
-        //         getRequest.onerror = function (event) {
-        //             console.error("Error retrieving data from indexedDB:", event.target.error);
-        //             deferred.resolve(null);
-        //         };
+                getRequest.onerror = function (event) {
+                    console.error("Error retrieving data from indexedDB:", event.target.error);
+                    deferred.resolve(null);
+                };
 
-        //         transaction.oncomplete = function (event) {
-        //             db.close();
-        //         };
-        //     };
+                transaction.oncomplete = function (event) {
+                    db.close();
+                };
+            };
 
-        //     request.onerror = function (event) {
-        //         console.error("Error", event.target.error);
-        //         deferred.resolve(null);
-        //     };
+            request.onerror = function (event) {
+                console.error("Error", event.target.error);
+                deferred.resolve(null);
+            };
 
-        //     return deferred.promise;
-        // }
+            return deferred.promise;
+        }
     };
 }]);
 
